@@ -8,4 +8,4 @@ class Controller_ESB extends Controller_Template {
 		$this->template->title = "eSports Bucks - Tournament Organization Tool";
 		$this->template->media_base = URL::Base().'media/';
 	}
-} // End Welcome
+}
