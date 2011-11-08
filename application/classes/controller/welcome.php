@@ -1,10 +1,11 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
-class Controller_Welcome extends Controller {
+class Controller_ESB extends Controller_Template {
 
-	public function action_index()
+	public function before()
 	{
-		$this->response->body('hello, world!');
+		parent::before();
+		$this->template->title = "eSports Bucks - Tournament Organization Tool";
+		$this->template->media_base = URL::Base().'media/';
 	}
-
 } // End Welcome
