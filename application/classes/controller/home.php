@@ -1,7 +1,7 @@
 <?php defined('SYSPATH') or die('No direct script access.');
 
 class Controller_Home extends Controller_ESB {
-
+	
 	public function action_index()
 	{
 		$view = View::factory('home');
@@ -41,7 +41,10 @@ class Controller_Home extends Controller_ESB {
 			{
 				$username = @(htmlspecialchars($_POST['username']));
 				$password = @(htmlspecialchars($_POST['password']));
-				Auth::instance()->login($username,$password);
+				if(!Auth::instance()->login($username,$password))
+				{
+					array_push($view->errors,"Log in failed.");
+				}
 			}
 		
 		}
