@@ -1,0 +1,12 @@
+body {
+	font-family: sans-serif;
+	font-size: 10pt;
+}
+.message {
+	padding: 5px;
+	vertical-align: top;
+}
+.error {
+	background-color: #FFCECE;
+	border: 1px solid #FF0000;
+}

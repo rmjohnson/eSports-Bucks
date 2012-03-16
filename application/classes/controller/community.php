@@ -9,7 +9,7 @@ class Controller_Community extends Controller_ESB {
 		$view = View::factory('community');
 		$view->editwin = isset($_GET['editwin']);
 		$view->editfail = isset($_GET['editfail']);
-		$view->communities = DB::select()->from('communities')->execute()->as_array('communities_id');
+		$view->communities = DB::select()->from('communities')->execute()->as_array();
 		$this->template->content = $view;
 	}
 	
@@ -45,55 +45,86 @@ class Controller_Community extends Controller_ESB {
 	//View community information
 	public function action_view()
 	{
-		$id = $this->request->param();
-		$view = View::factory('community_view');
-		$community = DB::select()->from('communities')->where('communities_id','=',$id)->execute()->current();
-		$view->admin = name_from_id($community['admin']);
-		$view->mods = $community['mods'];
-		$view->name = $community['name'];
-		$view->description = $community['description'];
-		$this->template->content = $view;
+		$id = $this->request->param('id');
+		if(!$id)
+		{	
+			$this->request->redirect('/community');
+		} else {
+			$view = View::factory('community_view');
+			$community = DB::select()->from('communities')->where('communities_id','=',$id)->execute()->current();
+			$view->admin = name_from_id($community['admin']);
+			$mods = explode(',',$community['mods']);
+			for($i=0;$i<count($mods);$i++)
+			{
+				$mods[$i] = name_from_id($mods[$i]);
+			}
+			$mods = implode(', ',$mods);
+			$view->mods = $mods;
+			$view->name = $community['name'];
+			$view->description = $community['description'];
+			$view->members = DB::select('user')->from('membership')->where('community','=',$id)->execute()->as_array('user','user');
+			$view->join = '';
+			// If the logged in user is not already in the community, add a join link
+			if(!DB::select()->from('membership')->where('community','=',$id)->where('user','=',$this->user)->execute()->current())
+			{
+				$view->join = '<a href="/community/join/' . $id[0] . '">Join this community!</a>';
+			}
+			
+			$this->template->content = $view;
+		}
 	}
 	
 	//Edit information about a community
 	public function action_edit()
 	{
 		$id = $this->request->param();
-		$view = View::factory('community_edit');
-		$community = DB::select()->from('communities')->where('communities_id','=',$id)->execute()->current();
-		if($this->user == $community['admin'])
+		if(!$id)
 		{
-			$view->mods = $community['mods'];
-			$view->name = $community['name'];
-			$view->description = $community['description'];
-			if($_POST)
-			{
-				$mods = $_POST['mods'];
-				$name = $_POST['name'];
-				$description = $_POST['description'];
-				if(DB::update('communities')->set(array('mods' => $mods,'name' => $name, 'description' => $description))->where('communities_id','=',$community['communities_id'])->execute())
-				{
-					$this->request->redirect("/community?editwin");
-				} else {
-					$this->request->redirect("/community?editfail");
-				}
-			}
-			$this->template->content = $view;
+			$this->request->redirect('/community');
 		} else {
-			$this->request->redirect("/?accessdenied");
+			$view = View::factory('community_edit');
+			$community = DB::select()->from('communities')->where('communities_id','=',$id)->execute()->current();
+			if($this->user == $community['admin'])
+			{
+				$view->mods = $community['mods'];
+				$view->name = $community['name'];
+				$view->description = $community['description'];
+				if($_POST)
+				{
+					$mods = $_POST['mods'];
+					$name = $_POST['name'];
+					$description = $_POST['description'];
+					if(DB::update('communities')->set(array('mods' => $mods,'name' => $name, 'description' => $description))->where('communities_id','=',$community['communities_id'])->execute())
+					{
+						$this->request->redirect("/community?editwin");
+					} else {
+						$this->request->redirect("/community?editfail");
+					}
+				}
+				$this->template->content = $view;
+			} else {
+				$this->request->redirect("/?accessdenied");
+			}
 		}
 	}
 	
 	//Permalink to join a community
 	public function action_join()
 	{
-		$community = $this->request->param();
+		$community = $this->request->param('id');
 		$view = View::factory('community_join');
-		if(DB::insert('membership',array('user','community'))->values(array($this->user,$community))->execute())
-		{
-			$view->message = "Successfully joined.";
-		} else {
-			$view->message = "Joining failed.";
+		$view->community_id = $community;
+		$this->template->errors = array();
+		if(DB::select()->from('membership')->where('user','=',$this->user)->where('community','=',$community)->execute()->current()) {
+			array_push($this->template->errors, 'You are already a member of this community.');
+		}
+		if(empty($this->template->errors)) {
+			if(DB::insert('membership',array('user','community'))->values(array($this->user,$community))->execute())
+			{
+				$view->message = "Successfully joined.";
+			} else {
+				$view->message = "Joining failed.";
+			}
 		}
 		$this->template->content = $view;
 	}

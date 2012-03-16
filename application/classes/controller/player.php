@@ -7,13 +7,29 @@ class Controller_Player extends Controller_ESB {
 	public function action_index()
 	{
 		$view = View::factory('player');
-		$id = @($this->request->param());
-		$view->id = $id;
-		if($id)
-		{
-			$view->username = DB::select('username')->from('users')->where('id','=',$id)->execute()->get('username');
-			$communities_id = DB::select()->from('membership')->where('user','=',$id)->execute()->as_array('community','community');
+		$this->template->errors = array();
+		if($_POST) {
+			$username = @($_POST['username']);
+			$id = DB::select('id')->from('users')->where('username','=',$username)->execute()->get('id');
+			if($id) {
+				$this->request->redirect(URL::base() . 'player/view/' . $id);
+			} else {
+				array_push($this->template->errors,"Player not found.");
+			}
+		}
+		$this->template->content = $view;
+	}
+	
+	//View a player's profile
+	public function action_view()
+	{
+		$view = View::factory('player_view');
+		$view->id = $this->request->param('id');
+		$communities_id = DB::select()->from('membership')->where('user','=',$view->id)->execute()->as_array('community','community');
+		if(!empty($communities_id)) {
 			$view->communities = DB::select()->from('communities')->where('communities_id','IN',$communities_id)->execute()->as_array();
+		} else {
+			$view->communities = array();
 		}
 		$this->template->content = $view;
 	}

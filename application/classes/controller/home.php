@@ -5,12 +5,16 @@ class Controller_Home extends Controller_ESB {
 	public function action_index()
 	{
 		$view = View::factory('home');
-		$view->errors = array();
+		$view->accessdenied = isset($_GET['accessdenied']);
 		if(isset($_GET['logout']))
 		{
 			Auth::instance()->logout();
-		}		
-		$view->logged_in = Auth::instance()->logged_in();
+		}
+		$this->template->errors = array();
+		$view->links = array();
+		$view->links += array('community' => 'Communities');
+		$view->links += array('tournament' => 'Tournaments');
+		
 		if($_POST)
 		{
 			if(@($_POST['register']))
@@ -22,10 +26,10 @@ class Controller_Home extends Controller_ESB {
 				
 				if($password != $confirm)
 				{
-					array_push($view->errors,"Passwords did not match.");
+					array_push($this->template->errors,"Passwords did not match.");
 				}
 				
-				if(empty($view->errors))
+				if(empty($this->template->errors))
 				{
 					$new_user = ORM::factory('user');
 					$new_user->email=$email;
@@ -41,13 +45,14 @@ class Controller_Home extends Controller_ESB {
 			{
 				$username = @(htmlspecialchars($_POST['username']));
 				$password = @(htmlspecialchars($_POST['password']));
-				if(!Auth::instance()->login($username,$password))
+				if(Auth::instance()->login($username,$password) != 1)
 				{
-					array_push($view->errors,"Log in failed.");
+					array_push($this->template->errors,"Log in failed.");
 				}
 			}
 		
 		}
+		$view->logged_in = Auth::instance()->logged_in();
 		$this->template->content = $view;
 	}
 }

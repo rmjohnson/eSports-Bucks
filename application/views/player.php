@@ -1,12 +1,11 @@
-<? if($id): ?>
-<h1><?= $username; ?></h1>
-<?
-foreach($communities as $community)
-{
-	echo "<h4>" . $community['name'] . "</h4>";
-	echo "<p>" . $community['description'] . "</p>";
-}
-?>
-<? else: ?>
 Search for players and stuff.
-<? endif; ?>
+<form action="" method="POST">
+<table>
+	<tr>
+		<td>Player Name:</td>
+		<td><input type="text" name="username"></td>
+	</tr>
+	<tr>
+		<td colspan="2" align="center"><input type="submit" name="submit" value="Search!"></td>
+	</tr>
+</table>

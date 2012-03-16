@@ -10,8 +10,8 @@
 foreach($communities as $community)
 {
 	echo "<tr>";
-	echo "\t<td><a href=\"community/view/" . $community['communities_id'] . "\">" . $community['name'] . "</a></td>";
-	echo "\t<td>" . name_from_id($community['admin']) . "</td>";
+	echo "\t<td>" . com_link_from_id($community['communities_id']) ."</td>";
+	echo "\t<td>" . name_link_from_id($community['admin']) . "</td>";
 	echo "\t<td>" . count_from_id($community['communities_id']) . "</td>";
 	echo "</tr>";
 }

@@ -1,3 +1,9 @@
+<? if($accessdenied): ?>
+<p>
+	Access denied!
+</p>
+<? endif; ?>
+
 <? if(!$logged_in): ?>
 <h4>Log In</h4>
 <table>
@@ -44,6 +50,10 @@
 	</form>
 </table>
 <? else: ?>
-You are logged in! Yay!
+<?
+	foreach($links as $url => $label) {
+		echo '<a href="' . URL::base() .  $url . '">' . $label . '</a><br />';
+	}
+?>
 <a href="?logout">Log out?</a>
 <? endif; ?>
