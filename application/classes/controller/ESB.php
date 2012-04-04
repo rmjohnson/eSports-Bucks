@@ -7,6 +7,7 @@ class Controller_ESB extends Controller_Template {
 	{
 		parent::before();
 		$this->template->title = "eSports Bucks - Tournament Organization Tool";
+		$this->template->errors = array();
 		$this->template->media_base = URL::Base().'media/';
 		$this->user = Auth::instance()->get_user();
 		include('media/functions/esb.php');

@@ -11,3 +11,4 @@ if(!empty($communities))
 	echo "<p>No commmunities!</p>";
 }
 ?>
+<?= $edit ?>

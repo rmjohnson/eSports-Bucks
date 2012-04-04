@@ -10,3 +10,6 @@ body {
 	background-color: #FFCECE;
 	border: 1px solid #FF0000;
 }
+.hidden {
+	display: none;
+}

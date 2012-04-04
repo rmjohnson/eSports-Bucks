@@ -14,6 +14,7 @@ class Controller_Home extends Controller_ESB {
 		$view->links = array();
 		$view->links += array('community' => 'Communities');
 		$view->links += array('tournament' => 'Tournaments');
+		$view->links += array('player/view/' . $this->user => 'Your Profile');
 		
 		if($_POST)
 		{

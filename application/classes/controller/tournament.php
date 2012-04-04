@@ -16,33 +16,61 @@ class Controller_Tournament extends Controller_ESB {
 	//Add a tournament to a community
 	public function action_add()
 	{
+		$community = $this->request->param('id');
+		if(!$community)
+		{
+			$this->request->redirect(URL::base() . 'tournament');
+		}
+		
 		$view = View::factory('tournament_add');
-		$view->community ='';
-		$view->admin = '';
+		
+		$view->community = com_from_id($community);
+		$view->available_maps = get_maps();
+		/*
 		$view->refs = '';
-		$view->players = '';
 		$view->maps = '';
+		*/
 		$view->description = '';
 		$view->exclusive = '';
 		if($_POST)
 		{
-			//A function to retrieve ID using name or email should be made
-			$community = @(htmlspecialchars($_POST['community']));
-			$admin = @(htmlspecialchars($_POST['admin']));
-			$refs = @(htmlspecialchars($_POST['refs']));
-			$maps = @(htmlspecialchars($_POST['maps']));
+			$refs = array();
+			$refCount = $_POST['refCount'];
+			for($i=1;$i<=$refCount;$i++)
+			{
+				array_push($refs,$_POST['ref'.$i]);
+			}
+			
+			$ref_ids = array();
+			foreach($refs as $ref)
+			{
+				if(!id_from_name($ref))
+				{
+					array_push($this->template->errors,"Could not find user: " . $ref);
+				} else {
+					array_push($ref_ids,id_from_name($ref));
+				}
+			}
+			//die(Debug::vars($ref_ids));
+			$maps = array();
+			$mapCount = $_POST['mapCount'];
+			for($i=1;$i<=$mapCount;$i++) {
+				array_push($maps,$_POST['map'.$i]);
+			}
+			
 			$description = @(htmlspecialchars($_POST['description']));
 			$exclusive = @(htmlspecialchars($_POST['exclusive']));
-			if($community && $admin && $refs && $players && $maps && $description && $exclusive)
+			
+			if(!check_admin($this->user,$community)) 
 			{
-				DB::insert('tournies', array('community','admin','description','exclusive'))->values(array($community,$admin,$description,$exclusive))->execute();
+				array_push($this->template->errors,"You are not the admin of this community.");
+			}
+			
+			if(empty($this->template->errors))
+			{
+				//DB::insert('tournies', array('community','admin','description','exclusive'))->values(array($community,$this->user,$description,$exclusive))->execute();
 				$this->request->redirect("/tournament?success");
 			} else {
-				$view->community = $community;
-				$view->admin = $admin;
-				$view->refs = $refs;
-				$view->players = $players;
-				$view->maps = $maps;
 				$view->description = $description;
 				$view->exclusive = $exclusive;
 			}
@@ -53,14 +81,19 @@ class Controller_Tournament extends Controller_ESB {
 	//View the bracket and other information of a tournament
 	public function action_view()
 	{
-		$id = $this->request->param();
+		$id = $this->request->param('id');
+		if(!$id) {
+			$this->request->redirect(URL::base() . 'tournament');
+		}
+		
 		$view = View::factory('tournament_view');
 		$tournament = DB::select()->from('tournies')->where('tournies_id','=',$id)->execute()->current();
+		$view->name = $tournament['name'];
 		$view->community = $tournament['community'];
 		$view->admin = name_from_id($tournament['admin']);
-		$view->refs = $tournament['refs'];
-		$view->players = $tournament['players'];
-		$view->maps = $tournament['maps'];
+		$view->refs = explode(",",$tournament['refs']);
+		$view->players = DB::select('player')->from('tournies_players')->where('tournies_id','=',$id)->execute()->as_array('player','player');
+		$view->maps = DB::select('map')->from('tournies_maps')->where('tournies_id','=',$id)->execute()->as_array('map');
 		$view->description = $tournament['description'];
 		$view->exclusive = $tournament['exclusive'];
 		$this->template->content = $view;

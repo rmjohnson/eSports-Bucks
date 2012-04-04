@@ -7,6 +7,10 @@ function name_link_from_id($id)
 {
 	return '<a href="' . URL::base() . 'player/view/' . $id . '">' . DB::select('username')->from('users')->where('id','=',$id)->execute()->get('username') . '</a>';
 }
+function id_from_name($name)
+{
+	return DB::select('id')->from('users')->where('username','LIKE','%'.$name.'%')->execute()->get('id');
+}
 function com_from_id($id)
 {
 	return DB::select('name')->from('communities')->where('communities_id','=',$id)->execute()->get('name');
@@ -29,7 +33,11 @@ function count_from_id($id)
 }
 function check_membership($player_id,$community_id)
 {
-	return DB::select()->from('membership')->where('user','=',$player_id)->where('community','=',$community_id)->execute();
+	return DB::select()->from('membership')->where('user','=',$player_id)->where('community','=',$community_id)->execute()->current();
+}
+function check_admin($player_id,$community_id)
+{
+	return DB::select()->from('communities')->where('admin','=',$player_id)->where('communities_id','=',$community_id)->execute()->current();
 }
 function race_from_id($id)
 {
@@ -44,5 +52,13 @@ function race_from_id($id)
 			return "Terran";
 			break;
 	}
-}	
+}
+function get_maps()
+{
+	return DB::select()->from('maps')->execute()->as_array('maps_id','name');
+}
+function map_name($map)
+{
+	return DB::select('name')->from('maps')->where('maps_id','=',$map)->execute()->get('name');
+}
 ?>

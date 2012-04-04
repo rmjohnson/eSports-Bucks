@@ -31,12 +31,24 @@ class Controller_Player extends Controller_ESB {
 		} else {
 			$view->communities = array();
 		}
+		if($view->id == $this->user)
+		{
+			$view->edit = "<a href=\"" . URL::base() . "player/edit/" . $this->user .  "\">Edit your profile</a>";
+		} else {
+			$view->edit = "";
+		}
 		$this->template->content = $view;
 	}
 	
 	//Edit password/email for a user/player
 	public function action_edit()
 	{
+		$id = $this->request->param('id');
+		if($id != $this->user) {
+			$this->request->redirect(URL::base());
+		}
+		$view = View::factory('player_edit');
 		
+		$this->template->content = $view;
 	}
 }
